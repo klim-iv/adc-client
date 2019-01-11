@@ -5,3 +5,4 @@ authors = ["Igor <klim.iv@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+base32 = "0.4.0"

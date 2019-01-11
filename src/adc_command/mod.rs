@@ -1,3 +1,5 @@
+use base32;
+
 #[derive(Clone)]
 pub enum Error {
     Success = 0,
@@ -43,7 +45,7 @@ pub enum Severity {
     Fatal = 2
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum Type {
     Broadcast,
     Client,
@@ -80,5 +82,32 @@ pub struct AdcCommand {
 
     pub from: u32,
     pub to: u32,
+
+    pub cmd: String,
+
+    inner_cmd: Vec<u8>,
 }
 
+impl AdcCommand {
+    pub fn new(_type: Type, _from: u32, _to: u32, _cmd: String) -> AdcCommand {
+        AdcCommand { cmd_type: _type, from: _from, to: _to, cmd: _cmd, inner_cmd: Vec::new() }
+    }
+
+    pub fn to_vec(mut self) -> Vec<u8> {
+        self.inner_cmd.push(get_type(&self.cmd_type) as u8);
+
+        let mut _cmd = self.cmd.clone().into_bytes();
+        self.inner_cmd.append(&mut _cmd);
+
+        let mut _from = base32::encode(base32::Alphabet::RFC4648 {padding: false}, &self.from.to_be_bytes()).into_bytes();
+        self.inner_cmd.append(&mut _from);
+
+        self.inner_cmd
+    }
+}
+
+impl From<Vec<u8>> for AdcCommand {
+    fn from(data: Vec<u8>) -> AdcCommand {
+        AdcCommand::new(Type::Udp, 77, 56, "XYZ".to_string())
+    }
+}
